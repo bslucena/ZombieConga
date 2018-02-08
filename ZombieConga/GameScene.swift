@@ -20,6 +20,8 @@ class GameScene: SKScene {
     var lastTouchLocation: CGPoint?
     let zombieRotateRadiansPerSec: CGFloat = 4.0 * π
     let zombieAnimation: SKAction
+    let catCollisionSound: SKAction = SKAction.playSoundFileNamed("hitCat.wav", waitForCompletion: false)
+    let enemyCollisionSound: SKAction = SKAction.playSoundFileNamed("hitCatLady.wav", waitForCompletion: false)
     
     override init(size: CGSize) {
         let maxAspectRatio:CGFloat = 16.0/9.0
@@ -107,6 +109,11 @@ class GameScene: SKScene {
         }
         
         boundsCheckZombie()
+        //chechCollisions()
+    }
+    
+    override func didEvaluateActions() {
+        chechCollisions()
     }
     
     func move(sprite: SKSpriteNode, velocity: CGPoint) {
@@ -186,6 +193,7 @@ class GameScene: SKScene {
     
     func spawnEnemy() {
         let enemy = SKSpriteNode(imageNamed: "enemy")
+        enemy.name = "enemy"
         enemy.position = CGPoint(
             x: size.width + enemy.size.width/2,
             y: CGFloat.random(
@@ -216,6 +224,7 @@ class GameScene: SKScene {
     func spawnCat() {
         // You create a cat at a random spot inside the playable rectangle. You set the cat’s scale to 0, which makes the cat effectively invisible
         let cat = SKSpriteNode(imageNamed: "cat")
+        cat.name = "cat"
         cat.position = CGPoint(
             x: CGFloat.random(min: playableRect.minX,
                               max: playableRect.maxX),
@@ -225,10 +234,51 @@ class GameScene: SKScene {
         addChild(cat)
         // You create an action to scale the cat up to normal size by calling scale(to:duration:). This action isn’t reversible, so you also create a similar action to scale the cat back down to 0. In sequence, the cat appears, waits for a bit, disappears and is then removed from the parent.
         let appear = SKAction.scale(to: 1.0, duration: 0.5)
-        let wait = SKAction.wait(forDuration: 10.0)
+        cat.zRotation = -π / 16.0
+        let leftWiggle = SKAction.rotate(byAngle: -π/8.0, duration: 0.5)
+        let rightWiggle = leftWiggle.reversed()
+        let fullWiggle = SKAction.sequence([leftWiggle, rightWiggle])
+        let scaleUp = SKAction.scale(by: 1.2, duration: 0.25)
+        let scaleDown = scaleUp.reversed()
+        let fullScale = SKAction.sequence([scaleUp, scaleDown, scaleUp, scaleDown])
+        let group = SKAction.group([fullScale, fullWiggle])
+        let groupWait = SKAction.repeat(group, count: 10)
         let disappear = SKAction.scale(to: 0, duration: 0.5)
         let removeFromParent = SKAction.removeFromParent()
-        let actions = [appear, wait, disappear, removeFromParent]
+        let actions = [appear, groupWait, disappear, removeFromParent]
         cat.run(SKAction.sequence(actions))
+    }
+    
+    func zombieHit(cat: SKSpriteNode) {
+        cat.removeFromParent()
+        run(catCollisionSound)
+    }
+    
+    func zombieHit(enemy: SKSpriteNode) {
+        enemy.removeFromParent()
+        run(enemyCollisionSound)
+    }
+    
+    func chechCollisions() {
+        var hitCats: [SKSpriteNode] = []
+        enumerateChildNodes(withName: "cat") { ( node, _) in
+            let cat = node as! SKSpriteNode
+            if cat.frame.intersects(self.zombie.frame) {
+                hitCats.append(cat)
+            }
+        }
+        for cat in hitCats {
+            zombieHit(cat: cat)
+        }
+        var hitEnemies: [SKSpriteNode] = []
+        enumerateChildNodes(withName: "enemy") { (node, _) in
+            let enemy = node as! SKSpriteNode
+            if node.frame.insetBy(dx: 20, dy: 20).intersects(self.zombie.frame) {
+                hitEnemies.append(enemy)
+            }
+        }
+        for enemy in hitEnemies {
+            zombieHit(enemy: enemy)
+        }
     }
 }
