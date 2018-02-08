@@ -20,6 +20,11 @@ class GameScene: SKScene {
     var lastTouchLocation: CGPoint?
     let zombieRotateRadiansPerSec: CGFloat = 4.0 * π
     let zombieAnimation: SKAction
+    var invincible = false
+    let catMovePointsPerSec:CGFloat = 480.0
+    var lives = 5
+    var gameOver = false
+    
     let catCollisionSound: SKAction = SKAction.playSoundFileNamed("hitCat.wav", waitForCompletion: false)
     let enemyCollisionSound: SKAction = SKAction.playSoundFileNamed("hitCatLady.wav", waitForCompletion: false)
     
@@ -85,7 +90,8 @@ class GameScene: SKScene {
                 },
                                SKAction.wait(forDuration: 1.0)])))
         
-        debugDrawPlayableArea()
+        //debugDrawPlayableArea()
+        playBackgroundMusic(filename: "backgroundMusic.mp3")
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -110,15 +116,28 @@ class GameScene: SKScene {
         
         boundsCheckZombie()
         //chechCollisions()
+        moveTrain()
+        if lives <= 0 && !gameOver {
+            gameOver = true
+            print("You lose!")
+            backgroundMusicPlayer.stop()
+            // 1
+            let gameOverScene = GameOverScene(size: size, won: false)
+            gameOverScene.scaleMode = scaleMode
+            // 2
+            let reveal = SKTransition.flipHorizontal(withDuration: 0.5)
+            // 3
+            view?.presentScene(gameOverScene, transition: reveal)
+        }
     }
     
     override func didEvaluateActions() {
-        chechCollisions()
+        checkCollisions()
     }
     
     func move(sprite: SKSpriteNode, velocity: CGPoint) {
         let amountToMove = velocity * CGFloat(dt)
-        print("Amount to move: \(amountToMove)")
+        //print("Amount to move: \(amountToMove)")
         sprite.position += amountToMove
     }
     
@@ -250,16 +269,39 @@ class GameScene: SKScene {
     }
     
     func zombieHit(cat: SKSpriteNode) {
-        cat.removeFromParent()
+        cat.name = "train"
+        cat.removeAllActions()
+        cat.setScale(1.0)
+        cat.zRotation = 0
+        
+        let turnGreen = SKAction.colorize(with: SKColor.green, colorBlendFactor: 1.0, duration: 0.2)
+        cat.run(turnGreen)
+        
         run(catCollisionSound)
     }
     
     func zombieHit(enemy: SKSpriteNode) {
-        enemy.removeFromParent()
+        invincible = true
+        let blinkTimes = 10.0
+        let duration = 3.0
+        let blinkAction = SKAction.customAction(withDuration: duration) { node, elapsedTime in
+            let slice = duration / blinkTimes
+            let remainder = Double(elapsedTime).truncatingRemainder(
+                dividingBy: slice)
+            node.isHidden = remainder > slice / 2
+        }
+        let setHidden = SKAction.run() { [weak self] in
+            self?.zombie.isHidden = false
+            self?.invincible = false
+        }
+        zombie.run(SKAction.sequence([blinkAction, setHidden]))
+        
         run(enemyCollisionSound)
+        loseCats()
+        lives -= 1
     }
     
-    func chechCollisions() {
+    func checkCollisions() {
         var hitCats: [SKSpriteNode] = []
         enumerateChildNodes(withName: "cat") { ( node, _) in
             let cat = node as! SKSpriteNode
@@ -270,6 +312,11 @@ class GameScene: SKScene {
         for cat in hitCats {
             zombieHit(cat: cat)
         }
+        
+        if invincible {
+            return
+        }
+        
         var hitEnemies: [SKSpriteNode] = []
         enumerateChildNodes(withName: "enemy") { (node, _) in
             let enemy = node as! SKSpriteNode
@@ -277,8 +324,69 @@ class GameScene: SKScene {
                 hitEnemies.append(enemy)
             }
         }
+        
         for enemy in hitEnemies {
             zombieHit(enemy: enemy)
         }
     }
+    
+    func moveTrain() {
+        var targetPosition = zombie.position
+        var trainCount = 0
+        
+        enumerateChildNodes(withName: "train") { node, stop in trainCount += 1
+            if !node.hasActions() {
+                let actionDuration = 0.3
+                let offset = targetPosition - node.position
+                let direction = offset.normalized()
+                let amountToMovePerSec = direction * self.catMovePointsPerSec
+                let amountToMove = amountToMovePerSec * CGFloat(actionDuration)
+                let moveAction = SKAction.moveBy(x: amountToMove.x, y: amountToMove.y, duration: actionDuration)
+                node.run(moveAction)
+            }
+            targetPosition = node.position
+        }
+        
+        if trainCount >= 15 && !gameOver {
+            gameOver = true
+            print("You win!")
+            backgroundMusicPlayer.stop()
+            // Create the new scene: First, you create an instance of the new scene itself. Typically, you’d use the default init(size:) initializer, although you can always choose to create your own custom initializer if you want to be able to pass in extra parameters. Later in this chapter, you’ll do just that.
+            
+            let gameOverScene = GameOverScene(size: size, won: true)
+            gameOverScene.scaleMode = scaleMode
+            
+            // Create a transition object: Next, you create a transition object to specify the type of animation you’d like to use to display the new scene. For example, there are crossfade transitions, flip transitions, door-opening transitions and many more.
+            let reveal = SKTransition.flipHorizontal(withDuration: 0.5)
+            
+            // Call the SKView’s presentScene(_:transition:) method: In iOS, SKView is the UIView that displays SpriteKit content on the screen. You can get access to this via a property on the scene: view. You can then call presentScene(_:transition:) to animate to the passed-in scene (created in step 1) with the passed-in transition (created in step 2).
+            view?.presentScene(gameOverScene, transition: reveal)
+        }
+    }
+    
+    func loseCats() {
+        // Here, you set up a variable to track the number of cats you’ve removed from the conga line, then you enumerate through the conga line.
+        var loseCount = 0
+        enumerateChildNodes(withName: "train") { node, stop in
+            // You find a random offset from the cat’s current position.
+            var randomSpot = node.position
+            randomSpot.x += CGFloat.random(min: -100, max: 100)
+            randomSpot.y += CGFloat.random(min: -100, max: 100)
+            // You run a little animation to make the cat move toward the random spot, spinning around and scaling to 0 along the way. Finally, the animation removes the cat from the scene. You also set the cat’s name to an empty string so it’s no longer considered a normal cat or a cat in the conga line.
+            node.name = ""
+            node.run(
+                SKAction.sequence([
+                    SKAction.group([
+                        SKAction.rotate(byAngle: π*4, duration: 1.0),
+                        SKAction.move(to: randomSpot, duration: 1.0),
+                        SKAction.scale(to: 0, duration: 1.0)
+                        ]),
+                    SKAction.removeFromParent()
+                    ]))
+            // You update the variable that’s tracking the number of cats you’ve removed from the conga line. Once you’ve removed two or more, you set the stop Boolean to true, which causes SpriteKit to stop enumerating the conga line.
+            loseCount += 1
+            if loseCount >= 2 {
+                stop[0] = true
+            }
+        } }
 }
