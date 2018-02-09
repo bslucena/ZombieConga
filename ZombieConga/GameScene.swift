@@ -23,9 +23,12 @@ class GameScene: SKScene {
     var invincible = false
     let catMovePointsPerSec:CGFloat = 480.0
     var lives = 5
+    var cats = 0
     var gameOver = false
     let cameraNode = SKCameraNode()
     let cameraMovePointsPerSec: CGFloat = 200.0
+    let livesLabel = SKLabelNode(fontNamed: "Glimstick")
+    let catsLabel = SKLabelNode(fontNamed: "Glimstick")
     
     var cameraRect : CGRect {
         let x = cameraNode.position.x - size.width/2
@@ -107,6 +110,26 @@ class GameScene: SKScene {
         addChild(cameraNode)
         camera = cameraNode
         cameraNode.position = CGPoint(x: size.width/2, y: size.height/2)
+        
+        livesLabel.text = "Lives: X"
+        livesLabel.fontColor = SKColor.black
+        livesLabel.fontSize = 100
+        livesLabel.horizontalAlignmentMode = .left
+        livesLabel.verticalAlignmentMode = .bottom
+        livesLabel.position = CGPoint(
+            // You subtract half the width and height of the playable area to get to the bottom-left corner, then add a 20-point margin to provide some space between the label and edges.
+
+            x: -playableRect.size.width/2 + CGFloat(20),
+            y: -playableRect.size.height/2 + CGFloat(20))
+        cameraNode.addChild(livesLabel)
+        
+        catsLabel.text = "Cats: X"
+        catsLabel.fontColor = SKColor.black
+        catsLabel.fontSize = 100
+        catsLabel.horizontalAlignmentMode = .right
+        catsLabel.verticalAlignmentMode = .bottom
+        catsLabel.position = CGPoint(x: playableRect.size.width/2 - CGFloat(20), y: -playableRect.size.width/4 - CGFloat(20))
+        cameraNode.addChild(catsLabel)
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -147,6 +170,8 @@ class GameScene: SKScene {
         
         //cameraNode.position = zombie.position
         moveCamera()
+        livesLabel.text = "Lives: \(lives)"
+        catsLabel.text = "Cats: \(cats)"
     }
     
     override func didEvaluateActions() {
@@ -354,6 +379,7 @@ class GameScene: SKScene {
         var trainCount = 0
         
         enumerateChildNodes(withName: "train") { node, stop in trainCount += 1
+            self.cats = trainCount
             if !node.hasActions() {
                 let actionDuration = 0.3
                 let offset = targetPosition - node.position

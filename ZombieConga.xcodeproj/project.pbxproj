@@ -15,6 +15,7 @@
 		2944B525201A46B000C1286B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2944B523201A46B000C1286B /* LaunchScreen.storyboard */; };
 		2944B530201A46B000C1286B /* ZombieCongaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2944B52F201A46B000C1286B /* ZombieCongaTests.swift */; };
 		2944B53B201A46B000C1286B /* ZombieCongaUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2944B53A201A46B000C1286B /* ZombieCongaUITests.swift */; };
+		29455345202DBBE60051485A /* GLIMSTIC.TTF in Resources */ = {isa = PBXBuildFile; fileRef = 29455344202DBBE60051485A /* GLIMSTIC.TTF */; };
 		29726EBE202C669800CD8467 /* win.wav in Resources */ = {isa = PBXBuildFile; fileRef = 29726EB9202C669800CD8467 /* win.wav */; };
 		29726EBF202C669800CD8467 /* lose.wav in Resources */ = {isa = PBXBuildFile; fileRef = 29726EBA202C669800CD8467 /* lose.wav */; };
 		29726EC0202C669800CD8467 /* hitCat.wav in Resources */ = {isa = PBXBuildFile; fileRef = 29726EBB202C669800CD8467 /* hitCat.wav */; };
@@ -57,6 +58,7 @@
 		2944B536201A46B000C1286B /* ZombieCongaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZombieCongaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2944B53A201A46B000C1286B /* ZombieCongaUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZombieCongaUITests.swift; sourceTree = "<group>"; };
 		2944B53C201A46B000C1286B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		29455344202DBBE60051485A /* GLIMSTIC.TTF */ = {isa = PBXFileReference; lastKnownFileType = file; name = GLIMSTIC.TTF; path = glimstick/GLIMSTIC.TTF; sourceTree = SOURCE_ROOT; };
 		29726EB9202C669800CD8467 /* win.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = win.wav; sourceTree = "<group>"; };
 		29726EBA202C669800CD8467 /* lose.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = lose.wav; sourceTree = "<group>"; };
 		29726EBB202C669800CD8467 /* hitCat.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = hitCat.wav; sourceTree = "<group>"; };
@@ -151,6 +153,7 @@
 		29726EB8202C669800CD8467 /* Sounds */ = {
 			isa = PBXGroup;
 			children = (
+				29455344202DBBE60051485A /* GLIMSTIC.TTF */,
 				29726EB9202C669800CD8467 /* win.wav */,
 				29726EBA202C669800CD8467 /* lose.wav */,
 				29726EBB202C669800CD8467 /* hitCat.wav */,
@@ -267,6 +270,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				29455345202DBBE60051485A /* GLIMSTIC.TTF in Resources */,
 				29726EBF202C669800CD8467 /* lose.wav in Resources */,
 				2944B520201A46B000C1286B /* Main.storyboard in Resources */,
 				29726EC2202C669800CD8467 /* backgroundMusic.mp3 in Resources */,
